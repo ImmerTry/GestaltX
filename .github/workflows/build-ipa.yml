@@ -1,0 +1,31 @@
+name: Build GestaltX IPA (unsigned)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build unsigned Release
+        run: |
+          xcodebuild -project GestaltX.xcodeproj \
+            -target GestaltX \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            CONFIGURATION_BUILD_DIR="$PWD/build" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r "build/GestaltX.app" Payload/
+          zip -r GestaltX.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gestaltx-ipa
+          path: GestaltX.ipa
